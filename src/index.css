@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* ── Theme Variables ──────────────────────────────────────────── */
+/* Soft Parchment & Sky — warm cream that's easy to stare at for hours */
+@theme {
+  --color-bg-darkest: #E8E5DE;
+  --color-bg-card: #F0EDE6;
+  --color-bg-hover: #DBD8D1;
+  --color-accent: #0E8FCC;
+  --color-accent-hover: #0C7BB3;
+  --color-accent-dim: #5CB8E0;
+  --color-text-primary: #2C2A26;
+  --color-text-secondary: #5E5B54;
+  --color-text-muted: #706D66;
+  --color-border: #D4D1CA;
+  --color-success: #22c55e;
+}
+
+/* ── Accent RGB & Grain (for inline styles that need rgba()) ── */
+/* These live outside @theme because they're not Tailwind utilities */
+:root {
+  --accent-rgb: 14, 143, 204;
+  --grain-opacity: 0.02;
+}
+
+/* ── Dark Mode Overrides ─────────────────────────────────────── */
+/* Toggled by the navbar sun/moon switch — warm dark palette */
+.dark {
+  --color-bg-darkest: #0C0B09;
+  --color-bg-card: #13120F;
+  --color-bg-hover: #1C1B17;
+  --color-accent: #22D3EE;
+  --color-accent-hover: #67E8F9;
+  --color-accent-dim: #0E8FCC;
+  --color-text-primary: #E8E2D6;
+  --color-text-secondary: #A39E90;
+  --color-text-muted: #6B665C;
+  --color-border: #1E1D19;
+  --accent-rgb: 34, 211, 238;
+  --color-success: #4ade80;
+  --grain-opacity: 0.03;
+}
+
+/* ── Display Font ────────────────────────────────────────────── */
+/* Space Grotesk for hero heading only — techy contrast to body font */
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(3rem, 6vw + 1rem, 6rem);
+  line-height: 1.1;
+}
+
+/* ── Base Styles ──────────────────────────────────────────────── */
+body {
+  margin: 0;
+  background-color: var(--color-bg-darkest);
+  color: var(--color-text-primary);
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Grain Texture ───────────────────────────────────────────── */
+/* Very subtle noise — adds depth without looking dirty on light bg */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ── Custom Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-darkest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-dim);
+}
+
+/* ── Smooth Scroll ────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-bg-darkest);
+}
+
+/* ── Selection Color ──────────────────────────────────────────── */
+::selection {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+}

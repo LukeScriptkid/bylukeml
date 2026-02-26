@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/bylukeml/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lukas Liberg | Portfolio</title>
+    <meta name="description" content="Portfolio of Lukas Liberg. ML Enthusiast, Cloud Explorer, IT Operations" />
+    <meta property="og:title" content="Lukas Liberg | Portfolio" />
+    <meta property="og:description" content="IT Operations apprentice building toward ML and cloud engineering" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Apply dark class BEFORE React hydrates to prevent theme flash -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
