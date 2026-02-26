@@ -1,0 +1,50 @@
+# Builds the site and deploys to GitHub Pages on every push to main.
+# Uses the official GitHub Pages actions so no access tokens are needed.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+# Allow the workflow to deploy to Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time — cancel in-progress runs
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Check out the repo
+      - uses: actions/checkout@v4
+
+      # Set up Node and cache npm dependencies
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Install dependencies
+      - run: npm ci
+
+      # Build the production bundle
+      - run: npm run build
+
+      # Upload the dist folder as a Pages artifact
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      # Deploy to GitHub Pages
+      - id: deployment
+        uses: actions/deploy-pages@v4
