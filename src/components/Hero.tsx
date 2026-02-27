@@ -23,6 +23,22 @@ export default function Hero() {
   const [text, setText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Check if the user prefers reduced motion at the OS level.
+  // When true, we skip the typewriter animation and show a static role,
+  // and swap the pulsing cursor for a solid one.
+  const [prefersReduced, setPrefersReduced] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+
+  // Listen for changes to the reduced-motion preference (e.g. user
+  // toggles it in system settings while the page is open)
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
   // useScroll gives us a live scrollY MotionValue that updates on
   // the GPU without triggering React re-renders
   const { scrollY } = useScroll();
@@ -43,38 +59,46 @@ export default function Hero() {
   //   1. Finished typing the full word → pause 2s, then start deleting
   //   2. Finished deleting → advance to the next role in the array
   //   3. Still mid-type or mid-delete → add/remove one character
+  // Skipped entirely when user prefers reduced motion.
   useEffect(() => {
+    // Don't run timers when reduced motion is active
+    if (prefersReduced) return;
+
     const currentRole = ROLES[roleIndex];
 
-    // Branch 1: Full word is typed — wait before we start erasing
+    // Full word is typed — wait 2s before we start erasing
     if (!isDeleting && text === currentRole) {
       const pause = setTimeout(() => setIsDeleting(true), 2000);
       return () => clearTimeout(pause);
     }
 
-    // Branch 2: Fully deleted — move to next role (wraps around)
-    if (isDeleting && text === '') {
-      setIsDeleting(false);
-      setRoleIndex((prev) => (prev + 1) % ROLES.length);
-      return;
-    }
-
-    // Branch 3: Type or delete one character at a time.
+    // Type or delete one character at a time.
     // Deleting is faster (40ms) than typing (80ms) for a natural feel.
+    // When deletion empties the text, advance to the next role inline
+    // to keep all setState calls inside the async callback (lint-safe).
     const timeout = setTimeout(
       () => {
         if (!isDeleting) {
-          // Add the next character
           setText(currentRole.slice(0, text.length + 1));
         } else {
-          // Remove the last character
-          setText(currentRole.slice(0, text.length - 1));
+          const nextLen = text.length - 1;
+          setText(currentRole.slice(0, nextLen));
+          // Just cleared the last character — advance to next role
+          if (nextLen === 0) {
+            setIsDeleting(false);
+            setRoleIndex((prev) => (prev + 1) % ROLES.length);
+          }
         }
       },
       isDeleting ? 40 : 80
     );
     return () => clearTimeout(timeout);
-  }, [text, isDeleting, roleIndex]);
+  }, [text, isDeleting, roleIndex, prefersReduced]);
+
+  // Derive displayed text: when reduced motion is on, show the full
+  // role statically instead of the typewriter's partial text state.
+  // This avoids calling setState inside an effect (React anti-pattern).
+  const displayText = prefersReduced ? ROLES[roleIndex] : text;
 
   return (
     <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
@@ -135,8 +159,9 @@ export default function Hero() {
           className="text-xl sm:text-2xl text-text-secondary mb-6 h-9"
         >
           <span className="text-text-muted">[</span>
-          <span className="text-accent-hover font-medium">{text}</span>
-          <span className="animate-pulse text-accent">|</span>
+          <span className="text-accent-hover font-medium">{displayText}</span>
+          {/* Cursor blinks via CSS pulse, but stays solid if user prefers reduced motion */}
+          <span className={`${prefersReduced ? '' : 'animate-pulse'} text-accent`}>|</span>
           <span className="text-text-muted">]</span>
         </motion.div>
 

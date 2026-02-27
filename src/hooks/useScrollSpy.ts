@@ -19,8 +19,11 @@ export function useScrollSpy(sectionIds: string[], offset = 300): string {
   // Store sectionIds in a ref so the scroll listener doesn't need to
   // re-register every time the caller passes a new array reference.
   // This makes the hook safe to call with inline arrays.
+  // Updated via useEffect (not during render) to satisfy React's ref rules.
   const idsRef = useRef(sectionIds);
-  idsRef.current = sectionIds;
+  useEffect(() => {
+    idsRef.current = sectionIds;
+  });
 
   useEffect(() => {
     const handleScroll = () => {

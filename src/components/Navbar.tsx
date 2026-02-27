@@ -93,6 +93,18 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen, closeMobile]);
 
+  // Auto-close the mobile menu if the viewport crosses the md breakpoint
+  // (768px). Prevents the scroll-lock bug where the menu is visually hidden
+  // by CSS (md:hidden) but the mobileOpen state stays true, trapping scroll.
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 768px)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) closeMobile();
+    };
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [closeMobile]);
+
   // Lock body scroll when mobile menu is open to prevent
   // scrolling the page behind the menu overlay
   useEffect(() => {
