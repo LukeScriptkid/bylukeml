@@ -16,7 +16,7 @@
  * Implementation details:
  * - CSS Grid positions cards via inline gridRow/gridColumn styles
  * - An absolutely-positioned SVG overlay draws connection lines
- * - Card centers are measured after render (useLayoutEffect + fonts.ready)
+ * - Card centers are measured after render (useEffect + fonts.ready)
  * - motion.path animates lines with pathLength on scroll into view
  * - Hub node: small pulsing accent dot at grid center
  * - Mobile: simple cards with left accent border on current job

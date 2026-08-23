@@ -75,8 +75,9 @@ function ProjectCard({
         <div className="flex items-center gap-3">
           {/* Status indicator dot — colored by project status */}
           <span
+            role="img"
+            aria-label={`Status: ${status.label}`}
             className={`w-2.5 h-2.5 rounded-full shrink-0 ${status.dotClass}`}
-            title={status.label}
           />
           <h3 className="text-base font-semibold text-text-primary">
             {project.name}

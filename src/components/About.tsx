@@ -31,29 +31,33 @@ import { EXPERIENCE, SKILLS, CERTIFICATIONS, EMAIL, SOCIALS } from '../constants
 const PROMPT_USER = 'lukas@portfolio';
 const PROMPT_PATH = '~';
 
+// Age computed once at module level (same pattern as YEAR in App.tsx)
+const AGE = new Date().getFullYear() - 2002;
+
+// ── Prompt Component ─────────────────────────────────────────────
+// Defined at module scope so React doesn't recreate the component
+// type on every render (which would cause unnecessary DOM unmounts).
+function Prompt() {
+  return (
+    <>
+      <span className="text-accent">{PROMPT_USER}</span>
+      <span className="text-text-muted">:</span>
+      <span className="text-accent-dim">{PROMPT_PATH}</span>
+      <span className="text-text-muted">$ </span>
+    </>
+  );
+}
+
 // ── Command output generators ────────────────────────────────────
 // Each function returns an array of JSX elements to render as
 // terminal output lines.
 
-function introOutput(): React.ReactNode[] {
-  const age = new Date().getFullYear() - 2002;
+function bioOutput(): React.ReactNode[] {
   return [
-    <p key="intro-bio-1" className="text-text-secondary leading-relaxed mb-2">
-      I'm Lukas ({age}), an IT Operations apprentice from Oslo, Norway. Computers have been a part of my life for as long as I can remember, giving me a strong interest in both hardware and software. I took a few detours along the way, but they only made it clearer that this is where I belong.
+    <p key="bio-1" className="text-text-secondary leading-relaxed mb-2">
+      I'm Lukas ({AGE}), an IT Operations apprentice from Oslo, Norway. Computers have been a part of my life for as long as I can remember, giving me a strong interest in both hardware and software. I took a few detours along the way, but they only made it clearer that this is where I belong.
     </p>,
-    <p key="intro-bio-2" className="text-text-secondary leading-relaxed">
-      I joined Bama Tek as their first ever IT apprentice, where I handle service desk and IT operations. At home I'm homelabbing for my CCNA and working towards becoming a Network Architect in the long run. Beyond networking, I'm interested in AI and how it can be applied to automate infrastructure.
-    </p>,
-  ];
-}
-
-function aboutOutput(): React.ReactNode[] {
-  const age = new Date().getFullYear() - 2002;
-  return [
-    <p key="about-1" className="text-text-secondary leading-relaxed mb-2">
-      I'm Lukas ({age}), an IT Operations apprentice from Oslo, Norway. Computers have been a part of my life for as long as I can remember, giving me a strong interest in both hardware and software. I took a few detours along the way, but they only made it clearer that this is where I belong.
-    </p>,
-    <p key="about-2" className="text-text-secondary leading-relaxed">
+    <p key="bio-2" className="text-text-secondary leading-relaxed">
       I joined Bama Tek as their first ever IT apprentice, where I handle service desk and IT operations. At home I'm homelabbing for my CCNA and working towards becoming a Network Architect in the long run. Beyond networking, I'm interested in AI and how it can be applied to automate infrastructure.
     </p>,
   ];
@@ -171,9 +175,8 @@ function runCommand(input: string): { output: React.ReactNode[]; clear?: boolean
     case 'help':
       return { output: helpOutput() };
     case '--introduce':
-      return { output: introOutput() };
     case 'about':
-      return { output: aboutOutput() };
+      return { output: bioOutput() };
     case 'skills':
       return { output: skillsOutput() };
     case 'experience':
@@ -291,16 +294,6 @@ export default function About() {
   const focusInput = useCallback(() => {
     inputRef.current?.focus();
   }, []);
-
-  // Render the prompt prefix (reused for history entries and current line)
-  const Prompt = () => (
-    <>
-      <span className="text-accent">{PROMPT_USER}</span>
-      <span className="text-text-muted">:</span>
-      <span className="text-accent-dim">{PROMPT_PATH}</span>
-      <span className="text-text-muted">$ </span>
-    </>
-  );
 
   return (
     <section id="about" className="py-28 px-6">

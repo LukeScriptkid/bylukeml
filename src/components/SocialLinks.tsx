@@ -5,9 +5,7 @@ import { SOCIALS } from '../constants';
  * Reusable social icon row.
  *
  * Renders the shared SOCIALS data (from constants.ts) as animated
- * links with spring-bounce hover effects. Used in two places:
- *   - Contact section (20px icons, right-aligned on desktop)
- *   - Footer (14px icons, centered/right)
+ * links with spring-bounce hover effects. Used in the Contact section.
  *
  * The parent controls layout via className (flex direction, gap, etc.)
  * and icon size via iconSize prop.

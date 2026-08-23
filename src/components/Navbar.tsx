@@ -27,9 +27,9 @@ import { NAV_LINKS, SECTION_IDS } from '../constants';
 
 /**
  * Reads the initial theme preference on first render.
- * Checks localStorage first, then falls back to the user's OS
- * prefers-color-scheme setting. Returns true if the user wants
- * light mode (since dark is the default, we track the exception).
+ * Checks localStorage for a saved choice. If none exists,
+ * defaults to dark mode (returns false). Only returns true
+ * if the user previously explicitly toggled to light mode.
  */
 function getInitialLight(): boolean {
   const stored = localStorage.getItem('theme');
