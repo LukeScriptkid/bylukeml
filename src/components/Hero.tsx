@@ -85,15 +85,6 @@ export default function Hero() {
               </motion.div>
 
               {/* Location + status */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.0 }}
-                className="text-text-muted text-sm mb-6"
-              >
-                Oslo, Norway
-              </motion.p>
-
               {/* CTA buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
