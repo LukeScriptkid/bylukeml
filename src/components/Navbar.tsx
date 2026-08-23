@@ -1,80 +1,71 @@
+/**
+ * Navbar — Fixed top navigation bar with scroll-spy highlighting.
+ *
+ * Features:
+ * - Starts transparent, gains blurred backdrop after 50px scroll
+ * - Active section gets animated underline via LayoutGroup
+ * - Dark mode toggle (Sun/Moon) switches .light class on <html>
+ * - Dark mode is the DEFAULT — light mode is opt-in
+ * - Mobile hamburger menu with body scroll lock
+ * - Logo styled as a terminal hostname: "lukas@net:~$"
+ *
+ * Accessibility:
+ * - aria-expanded and aria-controls link hamburger to mobile menu
+ * - aria-current="page" marks the active section link
+ * - Escape key closes the mobile menu
+ * - Body scroll is locked when mobile menu is open
+ * - Auto-closes mobile menu when viewport crosses md breakpoint
+ *   (prevents scroll-lock bug where menu is hidden by CSS but
+ *   state is still true)
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { useScrollSpy } from '../hooks/useScrollSpy';
-
-/**
- * Fixed top navigation bar with scroll-spy highlighting.
- *
- * Starts fully transparent and gains a blurred background once the
- * user scrolls past 50px. The active section link gets an animated
- * underline indicator that slides between links via Framer Motion's
- * layoutId system (LayoutGroup).
- *
- * Mobile menu is controlled via React state (not DOM classList) so
- * React stays in sync and accessibility tools can detect the
- * expanded/collapsed state.
- *
- * Accessibility features:
- * - aria-expanded and aria-controls link the hamburger to the menu
- * - aria-current="page" marks the active section link
- * - Escape key closes the mobile menu
- * - Body scroll is locked when the mobile menu is open
- */
-
-// Navigation links — each maps to a section ID on the page.
-// Order here determines the order in both desktop and mobile nav.
-const NAV_LINKS = [
-  { label: 'About', href: '#about' },
-  { label: 'Experience', href: '#experience' },
-  { label: 'Roadmap', href: '#roadmap' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Skills', href: '#skills' },
-  { label: 'Contact', href: '#contact' },
-];
-
-// Extract just the IDs (without #) for the scroll spy hook
-const SECTION_IDS = NAV_LINKS.map((l) => l.href.replace('#', ''));
+import { NAV_LINKS, SECTION_IDS } from '../constants';
 
 /**
  * Reads the initial theme preference on first render.
  * Checks localStorage first, then falls back to the user's OS
- * prefers-color-scheme setting. Returns true if dark mode.
+ * prefers-color-scheme setting. Returns true if the user wants
+ * light mode (since dark is the default, we track the exception).
  */
-function getInitialDark(): boolean {
+function getInitialLight(): boolean {
   const stored = localStorage.getItem('theme');
-  if (stored === 'dark') return true;
-  if (stored === 'light') return false;
-  // No saved preference — respect the OS setting
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (stored === 'light') return true;
+  if (stored === 'dark') return false;
+  // No saved preference — always default to dark
+  return false;
 }
 
 export default function Navbar() {
-  // Whether the user has scrolled past 50px (toggles the backdrop)
+  // Whether the user has scrolled past 50px (toggles backdrop)
   const [scrolled, setScrolled] = useState(false);
   // Whether the mobile hamburger menu is open
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Dark mode toggle state — initialized from localStorage or OS pref
-  const [dark, setDark] = useState(getInitialDark);
-  // Which section ID is currently in view (drives the active link highlight)
-  const activeId = useScrollSpy(SECTION_IDS);
+  // Light mode toggle — dark is default, this tracks the exception
+  const [isLight, setIsLight] = useState(getInitialLight);
+  // Which section ID is currently in view (drives active link highlight)
+  // Cast to mutable string[] since useScrollSpy expects that
+  const activeId = useScrollSpy([...SECTION_IDS]);
 
-  // Stable callback ref for closing the mobile menu — used by Escape
-  // handler and link click handlers without causing re-subscriptions
+  // Stable callback for closing mobile menu — used by Escape handler
+  // and link click handlers without causing re-subscriptions
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
-  // Sync the .dark class on <html> and persist the choice to localStorage
-  // whenever the toggle changes
+  // Sync the .light class on <html> and persist choice to localStorage.
+  // Dark is the default (no class needed), light mode adds .light class.
   useEffect(() => {
     const root = document.documentElement;
-    if (dark) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
+    if (isLight) {
+      root.classList.add('light');
       localStorage.setItem('theme', 'light');
+    } else {
+      root.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
     }
-  }, [dark]);
+  }, [isLight]);
 
   // Listen for scroll to toggle the navbar backdrop appearance
   useEffect(() => {
@@ -85,7 +76,7 @@ export default function Navbar() {
 
   // Close the mobile menu when Escape is pressed
   useEffect(() => {
-    if (!mobileOpen) return; // Don't register listener if menu is closed
+    if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeMobile();
     };
@@ -93,9 +84,9 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen, closeMobile]);
 
-  // Auto-close the mobile menu if the viewport crosses the md breakpoint
-  // (768px). Prevents the scroll-lock bug where the menu is visually hidden
-  // by CSS (md:hidden) but the mobileOpen state stays true, trapping scroll.
+  // Auto-close mobile menu if viewport crosses the md breakpoint (768px).
+  // Prevents the scroll-lock bug where the menu is visually hidden by
+  // CSS (md:hidden) but mobileOpen state stays true, trapping scroll.
   useEffect(() => {
     const mql = window.matchMedia('(min-width: 768px)');
     const onChange = (e: MediaQueryListEvent) => {
@@ -109,12 +100,10 @@ export default function Navbar() {
   // scrolling the page behind the menu overlay
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    // Cleanup: always restore scroll on unmount
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
-  // Scroll to top when clicking the logo — prevents the default
-  // hash navigation and uses smooth scroll instead
+  // Scroll to top when clicking the logo
   const scrollToTop = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -126,29 +115,25 @@ export default function Navbar() {
       initial={{ y: -80 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`fixed top-0 left-0 right-0 z-50 border-b transition-colors duration-300 ${
-        // After scrolling 50px, the navbar gains a semi-transparent background
-        // with a backdrop blur and a visible bottom border
+      className={`fixed top-0 left-0 right-0 z-50 border-b border-dashed transition-colors duration-300 ${
         scrolled
-          ? 'bg-bg-darkest/90 backdrop-blur-md border-border'
+          ? 'bg-bg-void/90 backdrop-blur-md border-accent/15'
           : 'bg-transparent border-transparent'
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Logo — clicking scrolls smoothly to the top of the page */}
+        {/* Logo — clean monospace initials with accent dot.
+            Simple and recognizable without being over-themed. */}
         <a
           href="#hero"
           onClick={scrollToTop}
-          className="text-lg font-bold tracking-tight text-text-primary hover:text-accent-hover transition-colors"
+          className="font-mono text-base font-bold tracking-tight text-text-primary hover:text-accent transition-colors"
         >
-          LL<span className="text-accent">.</span>
+          lksrun<span className="text-accent">.</span>net
         </a>
 
-        {/*
-          Desktop nav links — wrapped in LayoutGroup so the active
-          indicator (layoutId="navbar-indicator") can animate smoothly
-          between whichever link is currently active.
-        */}
+        {/* Desktop nav links — LayoutGroup enables the animated
+            underline indicator to slide between active links */}
         <LayoutGroup>
           <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => {
@@ -159,7 +144,6 @@ export default function Navbar() {
                 <a
                   key={id}
                   href={link.href}
-                  // "page" is the correct aria-current value for navigation links
                   aria-current={isActive ? 'page' : undefined}
                   className={`relative text-sm font-medium transition-colors py-1 ${
                     isActive
@@ -168,7 +152,7 @@ export default function Navbar() {
                   }`}
                 >
                   {link.label}
-                  {/* Active underline indicator — slides between links via shared layoutId */}
+                  {/* Active underline — slides between links via shared layoutId */}
                   {isActive && (
                     <motion.div
                       layoutId="navbar-indicator"
@@ -182,20 +166,20 @@ export default function Navbar() {
           </div>
         </LayoutGroup>
 
-        {/* Right-side controls — grouped in a flex container so the
-            dark mode toggle and hamburger stay together on mobile */}
+        {/* Right-side controls — theme toggle + hamburger */}
         <div className="flex items-center gap-3">
-          {/* Dark mode toggle — shows Sun icon in dark mode, Moon in light */}
+          {/* Theme toggle — shows Moon in dark mode (click for light),
+              Sun in light mode (click for dark) */}
           <button
-            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-            onClick={() => setDark((prev) => !prev)}
+            aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+            onClick={() => setIsLight((prev) => !prev)}
             className="text-text-muted hover:text-text-primary transition-colors p-1.5"
           >
-            {dark ? <Sun size={16} /> : <Moon size={16} />}
+            {isLight ? <Moon size={16} /> : <Sun size={16} />}
           </button>
 
           {/* Mobile hamburger — hidden on desktop (md:hidden).
-              Swaps between a hamburger icon and an X when open. */}
+              Swaps between hamburger and X icon when open. */}
           <button
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
@@ -217,11 +201,11 @@ export default function Navbar() {
       </div>
 
       {/* Mobile nav dropdown — only renders when mobileOpen is true.
-          Clicking any link closes the menu via the closeMobile callback. */}
+          Clicking any link closes the menu via closeMobile callback. */}
       {mobileOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden bg-bg-darkest/95 backdrop-blur-md border-b border-border px-6 pb-4"
+          className="md:hidden bg-bg-void/95 backdrop-blur-md border-b border-dashed border-accent/15 px-6 pb-4"
         >
           {NAV_LINKS.map((link) => {
             const id = link.href.replace('#', '');
@@ -232,12 +216,11 @@ export default function Navbar() {
                 href={link.href}
                 aria-current={isActive ? 'page' : undefined}
                 className={`block py-2 text-sm transition-colors ${
-                  // Active link shows in accent color, others in muted
                   isActive
                     ? 'text-accent'
                     : 'text-text-muted hover:text-text-primary'
                 }`}
-                onClick={closeMobile} // Close menu after navigation
+                onClick={closeMobile}
               >
                 {link.label}
               </a>

@@ -4,26 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/bylukeml/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lukas Liberg | Portfolio</title>
-    <meta name="description" content="Portfolio of Lukas Liberg. ML Enthusiast, Cloud Explorer, IT Operations" />
-    <meta property="og:title" content="Lukas Liberg | Portfolio" />
-    <meta property="og:description" content="IT Operations apprentice building toward ML and cloud engineering" />
+    <title>Lukas Liberg | Network Engineer</title>
+    <meta name="description" content="Lukas Liberg — IT Operations apprentice building toward network architecture. CCNA student, Azure admin, Oslo Norway." />
+    <meta property="og:title" content="Lukas Liberg | Network Engineer" />
+    <meta property="og:description" content="IT Operations apprentice studying CCNA, working with Azure and Active Directory. Building toward network architecture." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
+    <!-- Preconnect to Google Fonts for faster font loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+    <!-- JetBrains Mono: terminal/monospace headings & labels (400 normal, 700 bold)
+         Inter: body text (400 normal, 500 medium, 600 semibold) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Apply dark class BEFORE React hydrates to prevent theme flash -->
-    <script>
-      (function() {
-        var t = localStorage.getItem('theme');
-        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

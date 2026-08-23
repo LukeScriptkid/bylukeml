@@ -1,154 +1,170 @@
-import { motion } from 'framer-motion';
-import { Award } from 'lucide-react';
-import TextReveal from './motion/TextReveal';
-
 /**
- * Skills section — magazine split layout.
+ * Skills — Category-grouped cluster grid with colored skill pills.
  *
- * Desktop: skills on the left (60%), certifications on the right (40%).
- * Skills are displayed as pill chips in two groups: "Working With"
- * (current tools) and "Learning" (roadmap skills).
+ * Skills are organized into 4 categories, each rendered as a card
+ * with a colored header label and flex-wrapped skill pills inside.
  *
- * Cert cards change appearance based on the "earned" flag — earned
- * certs get a green tint, planned ones get the default card style.
+ * Categories and their colors:
+ *   - Networking: baby blue (accent color)
+ *   - Cloud & Identity: indigo (#818cf8)
+ *   - Systems: emerald (#34d399)
+ *   - Tools: amber (#fbbf24)
+ *
+ * Pill sizing is driven by the skill's "weight" property:
+ *   weight 1 = small (text-xs, px-2.5)
+ *   weight 2 = medium (text-sm, px-3)
+ *   weight 3 = large (text-sm font-medium, px-3.5)
+ *
+ * Grid layout:
+ *   Desktop: 2 columns
+ *   Mobile: 1 column (stacked)
+ *
+ * Uses SKILLS data from constants.ts.
  */
 
-// Skills currently being used at work or in projects
-const CURRENT_SKILLS = [
-  'Azure', 'Active Directory', 'Python', 'Windows Server',
-  'Service Desk', 'PowerShell', 'React', 'TypeScript',
-  'Git', 'Tailwind CSS',
+import { motion } from 'framer-motion';
+import SectionHeading from './SectionHeading';
+import { SKILLS } from '../constants';
+import type { SkillNode } from '../constants';
+
+// ── Category Display Config ──────────────────────────────────────
+// Each category gets a display label, a text color for the header
+// and pill borders/text, and a border color for the pills.
+// Colors are chosen to be visually distinct while feeling cohesive.
+
+interface CategoryConfig {
+  label: string;      // Display name for the category header
+  textColor: string;  // Tailwind text color class for header + pill text
+  borderColor: string; // Tailwind border color class for pill borders
+  hoverBg: string;    // Tailwind bg class for pill hover state (15% opacity)
+}
+
+const CATEGORY_CONFIG: Record<SkillNode['category'], CategoryConfig> = {
+  networking: {
+    label: 'Networking',
+    textColor: 'text-accent',
+    borderColor: 'border-accent/30',
+    hoverBg: 'hover:bg-accent/15',
+  },
+  cloud: {
+    label: 'Cloud & Identity',
+    textColor: 'text-indigo-400',
+    borderColor: 'border-indigo-400/30',
+    hoverBg: 'hover:bg-indigo-400/15',
+  },
+  systems: {
+    label: 'Systems',
+    textColor: 'text-emerald-400',
+    borderColor: 'border-emerald-400/30',
+    hoverBg: 'hover:bg-emerald-400/15',
+  },
+  tools: {
+    label: 'Tools',
+    textColor: 'text-amber-400',
+    borderColor: 'border-amber-400/30',
+    hoverBg: 'hover:bg-amber-400/15',
+  },
+};
+
+// Category render order — controls which card appears where in the grid
+const CATEGORY_ORDER: SkillNode['category'][] = [
+  'networking',
+  'cloud',
+  'systems',
+  'tools',
 ];
 
-// Skills being learned as part of the career roadmap
-const LEARNING_SKILLS = [
-  'Docker', 'Linux', 'Machine Learning', 'scikit-learn',
-  'PyTorch', 'Kubernetes', 'Terraform', 'MLflow',
-  'CI/CD', 'FastAPI',
-];
+/**
+ * Maps a skill's weight (1-3) to Tailwind classes that control
+ * pill size. Higher weight = larger pill = more visual emphasis.
+ */
+function getPillClasses(weight: SkillNode['weight']): string {
+  switch (weight) {
+    case 3:
+      // Largest — prominent skills like TCP/IP, Azure, Active Directory
+      return 'text-sm font-medium px-3.5 py-1.5';
+    case 2:
+      // Medium — most skills fall here
+      return 'text-sm px-3 py-1';
+    case 1:
+      // Smallest — supplementary skills like Git, Wireshark
+      return 'text-xs px-2.5 py-1';
+  }
+}
 
-// Certification targets — flip "earned" to true and the card turns green
-const CERTS = [
-  { name: 'AZ-900', full: 'Azure Fundamentals', target: 'Oct 2026', earned: false },
-  { name: 'AZ-104', full: 'Azure Administrator', target: 'Jun 2027', earned: false },
-  { name: 'CKA', full: 'Certified Kubernetes Administrator', target: 'Sep 2027', earned: false },
-];
+/**
+ * Single category cluster card — colored header + flex-wrap pills.
+ */
+function CategoryCard({
+  category,
+  skills,
+  index,
+}: {
+  category: SkillNode['category'];
+  skills: SkillNode[];
+  index: number;
+}) {
+  const config = CATEGORY_CONFIG[category];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="p-5 sm:p-6 rounded-lg corner-marks bg-bg-surface/90 backdrop-blur-sm border border-dashed border-accent/15"
+    >
+      {/* Category header label — colored text in monospace */}
+      <h3
+        className={`font-mono text-sm font-semibold uppercase tracking-wider mb-4 ${config.textColor}`}
+      >
+        {config.label}
+      </h3>
+
+      {/* Skill pills — flex-wrap, sized by weight */}
+      <div className="flex flex-wrap gap-2">
+        {skills.map((skill) => (
+          <span
+            key={skill.name}
+            className={`rounded-lg border transition-all cursor-default ${
+              config.borderColor
+            } ${config.textColor} ${config.hoverBg} ${getPillClasses(
+              skill.weight
+            )} hover:scale-105`}
+          >
+            {skill.name}
+          </span>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Main Component ───────────────────────────────────────────────
 
 export default function Skills() {
+  // Group skills by category for rendering into separate cards
+  const grouped = CATEGORY_ORDER.map((category) => ({
+    category,
+    skills: SKILLS.filter((s) => s.category === category),
+  }));
+
   return (
     <section id="skills" className="py-28 px-6">
       <div className="max-w-6xl mx-auto">
-        {/* Magazine split — 3fr/2fr gives skills 60% and certs 40% */}
-        <div className="grid md:grid-cols-[3fr_2fr] gap-12 md:gap-16">
-          {/* Left column — heading + skill chip groups */}
-          <div>
-            <TextReveal text="Skills" className="text-3xl sm:text-4xl font-bold mb-14" />
+        {/* Section heading — blueprint reference style */}
+        <SectionHeading number="03" title="Skills" />
 
-            <div className="space-y-10">
-              {/* Current skills — primary-colored pill chips */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-              >
-                <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4">
-                  Working With
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {CURRENT_SKILLS.map((skill) => (
-                    <span
-                      key={skill}
-                      className="text-sm px-3 py-1.5 rounded-lg bg-bg-card text-text-primary"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Learning skills — muted text to visually distinguish from current */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4">
-                  Learning
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {LEARNING_SKILLS.map((skill) => (
-                    <span
-                      key={skill}
-                      className="text-sm px-3 py-1.5 rounded-lg bg-bg-card text-text-muted"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Right column — certification cards */}
-          <div>
-            {/*
-              mt-[4.75rem] on desktop aligns the "Certifications" label
-              with the first skill group, since the left column has the
-              TextReveal heading + mb-14 taking up that space.
-            */}
-            <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4 md:mt-[4.75rem]">
-              Certifications
-            </h3>
-            <div className="space-y-3">
-              {CERTS.map((cert, i) => (
-                <motion.div
-                  key={cert.name}
-                  initial={{ opacity: 0, x: 20 }} // Slides in from the right
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`p-5 rounded-2xl transition-colors ${
-                    // Earned certs get a subtle green tint, planned ones use default card bg
-                    cert.earned
-                      ? 'bg-success/5'
-                      : 'bg-bg-card hover:bg-bg-hover'
-                  }`}
-                >
-                  {/* Top row — cert name + icon on left, status badge on right */}
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      {/* Award icon turns green when earned */}
-                      <Award
-                        size={16}
-                        className={cert.earned ? 'text-success' : 'text-text-muted'}
-                      />
-                      <span className="text-sm font-semibold text-text-primary">
-                        {cert.name}
-                      </span>
-                    </div>
-                    {/* Status pill — "Earned" in green or "Planned" in muted */}
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        cert.earned
-                          ? 'bg-success/10 text-success'
-                          : 'bg-bg-hover text-text-muted'
-                      }`}
-                    >
-                      {cert.earned ? 'Earned' : 'Planned'}
-                    </span>
-                  </div>
-                  {/* Full certification name */}
-                  <p className="text-xs text-text-secondary">{cert.full}</p>
-                  {/* Target date or "Completed" if earned */}
-                  <p className="text-xs text-text-muted mt-1">
-                    {cert.earned ? 'Completed' : `Target: ${cert.target}`}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+        {/* 2-column grid on desktop, 1-column on mobile */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {grouped.map(({ category, skills }, i) => (
+            <CategoryCard
+              key={category}
+              category={category}
+              skills={skills}
+              index={i}
+            />
+          ))}
         </div>
       </div>
     </section>

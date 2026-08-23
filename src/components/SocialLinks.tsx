@@ -32,7 +32,7 @@ export default function SocialLinks({ iconSize = 18, className }: SocialLinksPro
             href={href}
             // Only add target/rel for external links (LinkedIn, GitHub)
             {...(isExternal && { target: '_blank', rel: 'noopener noreferrer' })}
-            className="text-text-muted hover:text-accent-hover transition-colors"
+            className="text-text-muted hover:text-accent transition-colors"
             aria-label={label}
             // Spring-bounce: scales up and lifts slightly on hover
             whileHover={{ scale: 1.2, y: -2 }}
