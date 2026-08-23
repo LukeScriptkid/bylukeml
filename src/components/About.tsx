@@ -42,7 +42,7 @@ function introOutput(): React.ReactNode[] {
       I'm Lukas ({age}), an IT Operations apprentice from Oslo, Norway. Computers have been a part of my life for as long as I can remember, giving me a strong interest in both hardware and software. I took a few detours along the way, but they only made it clearer that this is where I belong.
     </p>,
     <p key="intro-bio-2" className="text-text-secondary leading-relaxed">
-      I joined Bama Tek as their first ever IT apprentice, where I handle service desk and IT operations. At home I'm homelabbing for my CCNA and working towards becoming a Network Architect in the long run.
+      I joined Bama Tek as their first ever IT apprentice, where I handle service desk and IT operations. At home I'm homelabbing for my CCNA and working towards becoming a Network Architect in the long run. Beyond networking, I'm interested in AI and how it can be applied to automate infrastructure.
     </p>,
   ];
 }
@@ -54,7 +54,7 @@ function aboutOutput(): React.ReactNode[] {
       I'm Lukas ({age}), an IT Operations apprentice from Oslo, Norway. Computers have been a part of my life for as long as I can remember, giving me a strong interest in both hardware and software. I took a few detours along the way, but they only made it clearer that this is where I belong.
     </p>,
     <p key="about-2" className="text-text-secondary leading-relaxed">
-      I joined Bama Tek as their first ever IT apprentice, where I handle service desk and IT operations. At home I'm homelabbing for my CCNA and working towards becoming a Network Architect in the long run.
+      I joined Bama Tek as their first ever IT apprentice, where I handle service desk and IT operations. At home I'm homelabbing for my CCNA and working towards becoming a Network Architect in the long run. Beyond networking, I'm interested in AI and how it can be applied to automate infrastructure.
     </p>,
   ];
 }
